@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 // Author: Vasiliy Poverennov <vasiliy@poverennov.com>
+// https://bitbucket.org/bazookavrn/relocator
 
 #define NUM_RETRIES 10
 #define SLEEP_TIME 15000
@@ -28,7 +29,6 @@ int relocate(HWND hwnd) {
 
     LONG lStyle = GetWindowLong(hwnd, GWL_STYLE);
     if (lStyle == 0) {
-        printf("fail get\n");
         return 0;
     }
     lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
