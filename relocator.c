@@ -8,11 +8,10 @@
 #define SLEEP_TIME 15000
 
 HWND app_window = 0;
-BOOL CALLBACK find_app(HWND hwnd, LPARAM llook_for) {
-    DWORD look_for = (DWORD)llook_for;
+BOOL CALLBACK find_app(HWND hwnd, LPARAM look_for) {
     DWORD procid;
     GetWindowThreadProcessId(hwnd, &procid);
-    if (look_for == procid) {
+    if ((DWORD)look_for == procid) {
         app_window = hwnd;
         return FALSE; // finish search
     } else {
@@ -24,8 +23,10 @@ int relocate(HWND hwnd) {
     if (!hwnd) {
         return 0;
     }
-    RECT screen_rect;
-    GetWindowRect(GetDesktopWindow(), &screen_rect);
+    RECT screen;
+    if (!GetWindowRect(GetDesktopWindow(), &screen)) {
+        return 0;
+    }
 
     LONG lStyle = GetWindowLong(hwnd, GWL_STYLE);
     if (lStyle == 0) {
@@ -39,9 +40,9 @@ int relocate(HWND hwnd) {
     SetWindowLong(hwnd, GWL_EXSTYLE, lExStyle);
 */
 
-    if (!MoveWindow(hwnd, screen_rect.left, screen_rect.top,
-                    screen_rect.left + screen_rect.right,
-                    screen_rect.top + screen_rect.bottom, TRUE)) {
+    if (!SetWindowPos(hwnd, NULL, screen.left, screen.top, 
+                      screen.right - screen.left, screen.bottom - screen.top,
+                      SWP_NOZORDER | SWP_FRAMECHANGED)) {
         return 0;
     }
 
@@ -61,17 +62,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (!CreateProcess(NULL,   // No module name (use command line)
-        argv[1],        // Command line
-        NULL,           // Process handle not inheritable
-        NULL,           // Thread handle not inheritable
-        FALSE,          // Set handle inheritance to FALSE
-        0,              // No creation flags
-        NULL,           // Use parent's environment block
-        NULL,           // Use parent's starting directory 
-        &si,            // Pointer to STARTUPINFO structure
-        &pi)           // Pointer to PROCESS_INFORMATION structure
-    ){
+    if (!CreateProcess(NULL, argv[1], NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
         return 1;
     }
 
