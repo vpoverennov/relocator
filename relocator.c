@@ -20,15 +20,16 @@ BOOL CALLBACK find_app(HWND hwnd, LPARAM look_for) {
 }
 
 int relocate(HWND hwnd) {
+    RECT screen;
+	LONG lStyle;
     if (!hwnd) {
         return 0;
     }
-    RECT screen;
     if (!GetWindowRect(GetDesktopWindow(), &screen)) {
         return 0;
     }
 
-    LONG lStyle = GetWindowLong(hwnd, GWL_STYLE);
+	lStyle = GetWindowLong(hwnd, GWL_STYLE);
     if (lStyle == 0) {
         return 0;
     }
@@ -52,6 +53,7 @@ int relocate(HWND hwnd) {
 int main(int argc, char* argv[]) {
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
+    int i;
 
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
@@ -70,7 +72,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int i;
     for (i = 0; i < NUM_RETRIES && (app_window == 0); i++) {
         EnumWindows(find_app, (LPARAM)pi.dwProcessId);
         Sleep(SLEEP_TIME); // hack for 
