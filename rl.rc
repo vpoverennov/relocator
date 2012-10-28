@@ -1,1 +1,4 @@
-id ICON "rl.ico"
+// Hand made resource file
+//
+
+IDI_RL ICON "rl.ico"
