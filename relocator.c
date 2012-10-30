@@ -1,5 +1,6 @@
-#include <windows.h>
 #include <stdio.h>
+#include <windows.h>
+#include <tchar.h>
 
 // Author: Vasiliy Poverennov <bazookavn@gmail.com>
 // https://bitbucket.org/bazookavrn/relocator
@@ -21,7 +22,7 @@ BOOL CALLBACK find_app(HWND hwnd, LPARAM look_for) {
 
 int relocate(HWND hwnd) {
     RECT screen;
-	LONG lStyle;
+    LONG lStyle;
     if (!hwnd) {
         return 0;
     }
@@ -29,7 +30,7 @@ int relocate(HWND hwnd) {
         return 0;
     }
 
-	lStyle = GetWindowLong(hwnd, GWL_STYLE);
+    lStyle = GetWindowLong(hwnd, GWL_STYLE);
     if (lStyle == 0) {
         return 0;
     }
@@ -50,23 +51,50 @@ int relocate(HWND hwnd) {
     return 1;
 }
 
-int main(int argc, char* argv[]) {
+//int main(int argc, char* argv[]) {
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                   LPSTR lpCmdLine, int nCmdShow) {
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
-    int i;
+    size_t i;
+
+    LPWSTR *argv;
+    size_t argc;
+    LPWSTR game_cmd;
+    size_t game_cmd_len = 0;
+    LPTSTR cmdline = GetCommandLine();
 
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
 
-    if (argc != 2) {
-        printf("usage: %s game\n", argv[0]);
+    argv = CommandLineToArgvW(cmdline, &argc);
+    if (argv == NULL) {
+        return 1;
+    }
+    if (argc < 2) {
+        wprintf(L"usage: %s game [args ...]\n", argv[0]);
         return 1;
     }
 
-    if (!CreateProcess(NULL, argv[1], NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+    // count len of resulting cmdline
+    for (i = 1; i < argc; i++) {
+        game_cmd_len = game_cmd_len + wcslen(argv[i]) + 1;
+    }
+    //concatenate argv into one string
+    game_cmd = (LPWSTR)calloc(game_cmd_len + 1, sizeof(WCHAR));
+    for (i = 1; i < argc; i++) {
+        wcscat(game_cmd, argv[i]);
+        if (i < argc - 1) {
+            wcscat(game_cmd, L" ");
+        }
+    }
+    LocalFree(argv);
+
+    if (!CreateProcess(NULL, game_cmd, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
         return 1;
     }
+    free(game_cmd);
 
     if (WaitForInputIdle(pi.hProcess, INFINITE)) {
         return 1;
