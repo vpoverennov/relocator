@@ -1,3 +1,5 @@
+#define UNICODE 1
+#define _UNICODE 1
 #include <stdio.h>
 #include <windows.h>
 #include <tchar.h>
@@ -59,7 +61,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     size_t i;
 
     LPWSTR *argv;
-    size_t argc;
+    int argc;
     LPWSTR game_cmd;
     size_t game_cmd_len = 0;
     LPTSTR cmdline = GetCommandLine();
