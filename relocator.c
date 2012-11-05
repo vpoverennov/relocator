@@ -7,19 +7,32 @@
 // Author: Vasiliy Poverennov <bazookavn@gmail.com>
 // https://bitbucket.org/bazookavrn/relocator
 
-#define NUM_RETRIES 10
-#define SLEEP_TIME 15000
+#define NUM_RETRIES 120
+#define SLEEP_TIME 500
 
 HWND app_window = 0;
 BOOL CALLBACK find_app(HWND hwnd, LPARAM look_for) {
+    LONG win_style;
     DWORD procid;
+
     GetWindowThreadProcessId(hwnd, &procid);
-    if ((DWORD)look_for == procid) {
-        app_window = hwnd;
-        return FALSE; // finish search
-    } else {
+    if ((DWORD)look_for != procid) {
+        return TRUE; // continue
+    }
+
+    if (!IsWindowVisible(hwnd)) {
+        wprintf(L"found: [%d] invisible\n", hwnd);
         return TRUE;
     }
+
+    win_style = GetWindowLong(hwnd, GWL_STYLE);
+    if (!(win_style & WS_CAPTION)) {
+        wprintf(L"found: [%d] visible nocaption\n", hwnd);
+        return TRUE;
+    }
+    wprintf(L"found: [%d] visible ok\n", hwnd);
+    app_window = hwnd;
+    return FALSE;
 }
 
 int relocate(HWND hwnd) {
@@ -97,14 +110,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         return 1;
     }
     free(game_cmd);
+    wprintf(L"game started... [%d]\n", (int)pi.dwProcessId);
 
     if (WaitForInputIdle(pi.hProcess, INFINITE)) {
         return 1;
     }
 
-    for (i = 0; i < NUM_RETRIES && (app_window == 0); i++) {
+    for (i = 0; i < NUM_RETRIES; i++) {
+        wprintf(L"looking for windows...\n");
         EnumWindows(find_app, (LPARAM)pi.dwProcessId);
-        Sleep(SLEEP_TIME); // hack for 
+        if (app_window != 0) {
+            break;
+        }
+        wprintf(L"sleeping...\n");
+        Sleep(SLEEP_TIME);
     }
 
     CloseHandle(pi.hProcess);
