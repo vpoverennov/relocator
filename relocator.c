@@ -2,22 +2,38 @@
 #define _UNICODE 1
 #include <stdio.h>
 #include <windows.h>
+#include <tlhelp32.h>
 #include <tchar.h>
 
 // Author: Vasiliy Poverennov <bazookavn@gmail.com>
 // https://bitbucket.org/bazookavrn/relocator
 
+#define NUM_CHILDREN 10
 #define NUM_RETRIES 120
 #define SLEEP_TIME 500
 
-HWND app_window = 0;
-BOOL CALLBACK find_app(HWND hwnd, LPARAM look_for) {
+static HWND app_window;
+static DWORD app_pid;
+static DWORD children[NUM_CHILDREN];
+
+BOOL CALLBACK find_app(HWND hwnd, LPARAM param) {
     LONG win_style;
     DWORD procid;
+    BOOL matches;
+    size_t i;
 
     GetWindowThreadProcessId(hwnd, &procid);
-    if ((DWORD)look_for != procid) {
-        return TRUE; // continue
+    if (procid != app_pid) {
+        matches = FALSE;
+        for (i = 0; children[i]; i++) {
+            if (procid == children[i]) {
+                matches = TRUE;
+                break;
+            }
+        }
+        if (!matches) {
+            return TRUE; // continue
+        }
     }
 
     if (!IsWindowVisible(hwnd)) {
@@ -35,9 +51,38 @@ BOOL CALLBACK find_app(HWND hwnd, LPARAM look_for) {
     return FALSE;
 }
 
+
+BOOL find_children(DWORD parent_pid) {
+    HANDLE hProcessSnap;
+    size_t current = 0;
+    PROCESSENTRY32 pe32;
+    pe32.dwSize = sizeof(PROCESSENTRY32);
+
+    hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hProcessSnap == INVALID_HANDLE_VALUE) {
+        return FALSE;
+    }
+
+    if (!Process32First(hProcessSnap, &pe32)) {
+        CloseHandle(hProcessSnap);
+        return FALSE;
+    }
+
+    do {
+        if (pe32.th32ParentProcessID == parent_pid) {
+            children[current] = pe32.th32ProcessID;
+            current++;
+        }
+    } while (Process32Next(hProcessSnap, &pe32) && current < NUM_CHILDREN - 1);
+
+    children[current] = 0; // null terminate list of children
+    CloseHandle(hProcessSnap);
+    return TRUE;
+}
+
 int relocate(HWND hwnd) {
     RECT screen;
-    LONG lStyle;
+    LONG win_style;
     if (!hwnd) {
         return 0;
     }
@@ -45,12 +90,12 @@ int relocate(HWND hwnd) {
         return 0;
     }
 
-    lStyle = GetWindowLong(hwnd, GWL_STYLE);
-    if (lStyle == 0) {
+    win_style = GetWindowLong(hwnd, GWL_STYLE);
+    if (win_style == 0) {
         return 0;
     }
-    lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
-    SetWindowLong(hwnd, GWL_STYLE, lStyle);
+    win_style &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
+    SetWindowLong(hwnd, GWL_STYLE, win_style);
 /* // not sure if its needed
     LONG lExStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
     lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
@@ -110,7 +155,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         return 1;
     }
     free(game_cmd);
-    wprintf(L"game started... [%d]\n", (int)pi.dwProcessId);
+    app_pid = pi.dwProcessId;
+    wprintf(L"game started... [%d]\n", app_pid);
 
     if (WaitForInputIdle(pi.hProcess, INFINITE)) {
         return 1;
@@ -118,7 +164,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     for (i = 0; i < NUM_RETRIES; i++) {
         wprintf(L"looking for windows...\n");
-        EnumWindows(find_app, (LPARAM)pi.dwProcessId);
+        if (find_children(pi.dwProcessId)) {
+            EnumWindows(find_app, (LPARAM)pi.dwProcessId);
+        }
         if (app_window != 0) {
             break;
         }
