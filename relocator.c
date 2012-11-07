@@ -188,7 +188,7 @@ int process(size_t argc, wchar_t *argv[]) {
     }
 
     // game specific hacks
-    if (wcsncmp(game_name, wot_name, sizeof(wot_name))) {
+    if (wcsncmp(game_name, wot_name, sizeof(wot_name)) == 0) {
         // theres a small visual glitch if wot is relocated too fast
         Sleep(15000);
     }
@@ -205,6 +205,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     wchar_t *cmdline = GetCommandLine();
     argv = CommandLineToArgvW(cmdline, &argc);
     if (argv == NULL) {
+        return 1;
+    }
+    if (argc < 0) {
         return 1;
     }
     return process((size_t)argc, argv);
