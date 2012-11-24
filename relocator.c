@@ -1,8 +1,9 @@
-// Author: Vasiliy Poverennov <vasiliy@poverennov.com>
-// https://bitbucket.org/bazookavrn/relocator
+/* Author: Vasiliy Poverennov <vasiliy@poverennov.com>
+ * https://bitbucket.org/bazookavrn/relocator
+ */
 
-#define UNICODE 1
-#define _UNICODE 1
+#define UNICODE
+#define _UNICODE
 
 #include <stdio.h>
 #include <wctype.h>
@@ -27,11 +28,11 @@ static DWORD children[MAX_CHILDREN];
 static size_t num_children;
 
 wchar_t *wcsnlower(size_t count, wchar_t *in) {
+    size_t i;
     wchar_t *out = (wchar_t *)calloc(count + 1, sizeof(wchar_t));
     if (out == NULL) {
         return NULL;
     }
-    size_t i;
     for (i = 0; i < count; i++) {
         out[i] = towlower(in[i]);
     }
@@ -102,15 +103,15 @@ BOOL relocate(HWND window) {
     RECT screen;
     LONG win_style;
     if (!window) {
-        return 0;
+        return FALSE;
     }
     if (!GetWindowRect(GetDesktopWindow(), &screen)) {
-        return 0;
+        return FALSE;
     }
 
     win_style = GetWindowLong(window, GWL_STYLE);
     if (win_style == 0) {
-        return 0;
+        return FALSE;
     }
     win_style &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
     SetWindowLong(window, GWL_STYLE, win_style);
@@ -123,10 +124,10 @@ BOOL relocate(HWND window) {
     if (!SetWindowPos(window, NULL, screen.left, screen.top,
                       screen.right - screen.left, screen.bottom - screen.top,
                       SWP_NOZORDER | SWP_FRAMECHANGED)) {
-        return 0;
+        return FALSE;
     }
 
-    return 1;
+    return TRUE;
 }
 
 int process(size_t argc, wchar_t *argv[]) {
@@ -143,7 +144,12 @@ int process(size_t argc, wchar_t *argv[]) {
     ZeroMemory(&pi, sizeof(pi));
 
     if (argc < 2) {
-        wprintf(L"usage: %s game [args ...]\n", argv[0]);
+        MessageBox(
+            NULL,
+            (LPCWSTR)L"Get instructions at \nhttps://bitbucket.org/bazookavrn/relocator/",
+            (LPCWSTR)L"Does not work this way",
+            MB_ICONWARNING | MB_OK
+        );
         return 1;
     }
 
