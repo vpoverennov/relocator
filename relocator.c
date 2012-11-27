@@ -18,6 +18,7 @@
 static wchar_t *wcsnlower(size_t count, wchar_t *in);
 static BOOL find_children(DWORD parent_pid);
 static BOOL CALLBACK find_app(HWND hwnd, LPARAM param);
+static BOOL make_borderless(HWND window);
 static BOOL relocate(HWND window);
 static int process(size_t argc, wchar_t *argv[]);
 
@@ -99,16 +100,11 @@ BOOL CALLBACK find_app(HWND hwnd, LPARAM param) {
     return FALSE;
 }
 
-BOOL relocate(HWND window) {
-    RECT screen;
+BOOL make_borderless(HWND window) {
     LONG win_style;
     if (!window) {
         return FALSE;
     }
-    if (!GetWindowRect(GetDesktopWindow(), &screen)) {
-        return FALSE;
-    }
-
     win_style = GetWindowLong(window, GWL_STYLE);
     if (win_style == 0) {
         return FALSE;
@@ -120,10 +116,23 @@ BOOL relocate(HWND window) {
     lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
     SetWindowLong(window, GWL_EXSTYLE, lExStyle);
 */
-
+    if (!SetWindowPos(window, NULL, 100, 100, 800, 600,
+                      SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED)) {
+        return FALSE;
+    }
+    return TRUE;
+}
+BOOL relocate(HWND window) {
+    RECT screen;
+    if (!window) {
+        return FALSE;
+    }
+    if (!GetWindowRect(GetDesktopWindow(), &screen)) {
+        return FALSE;
+    }
     if (!SetWindowPos(window, NULL, screen.left, screen.top,
                       screen.right - screen.left, screen.bottom - screen.top,
-                      SWP_NOZORDER | SWP_FRAMECHANGED)) {
+                      SWP_NOZORDER)) {
         return FALSE;
     }
 
@@ -192,11 +201,14 @@ int process(size_t argc, wchar_t *argv[]) {
         wprintf(L"sleeping...\n");
         Sleep(SLEEP_TIME);
     }
+    if (!make_borderless(game_window)) {
+        return 1;
+    }
 
     // game specific hacks
     if (wcsncmp(game_name, wot_name, sizeof(wot_name)) == 0) {
         // theres a small visual glitch if wot is relocated too fast
-        Sleep(15000);
+        Sleep(30000);
     }
 
     CloseHandle(pi.hProcess);
