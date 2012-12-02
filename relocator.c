@@ -144,8 +144,8 @@ int process(size_t argc, wchar_t *argv[]) {
     PROCESS_INFORMATION pi;
     size_t i;
 
-    wchar_t *game_cmd;
     size_t game_cmd_len = 0;
+    wchar_t *game_cmd;
     wchar_t *game_name;
 
     ZeroMemory(&si, sizeof(si));
@@ -190,16 +190,14 @@ int process(size_t argc, wchar_t *argv[]) {
         return 1;
     }
 
-    for (i = 0; i < NUM_RETRIES; i++) {
+    for (i = 0; i < NUM_RETRIES; i++, Sleep(SLEEP_TIME)) {
         wprintf(L"looking for windows...\n");
         if (find_children(pi.dwProcessId)) {
             EnumWindows(find_app, 0);
         }
-        if (game_window != 0) {
+        if (game_window) {
             break;
         }
-        wprintf(L"sleeping...\n");
-        Sleep(SLEEP_TIME);
     }
     if (!make_borderless(game_window)) {
         return 1;
