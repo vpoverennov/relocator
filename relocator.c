@@ -2,14 +2,10 @@
  * https://bitbucket.org/bazookavrn/relocator
  */
 
-#define UNICODE
-#define _UNICODE
-
 #include <stdio.h>
 #include <wctype.h>
 #include <windows.h>
 #include <tlhelp32.h>
-#include <tchar.h>
 
 #define MAX_CHILDREN 10
 #define NUM_RETRIES 120
