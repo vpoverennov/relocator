@@ -11,6 +11,7 @@
 #define NUM_RETRIES 120
 #define SLEEP_TIME 500
 
+#define len(X) (sizeof(X) / sizeof(X[0]))
 static wchar_t *wcsnlower(size_t count, wchar_t *in);
 static BOOL find_children(DWORD parent_pid);
 static BOOL CALLBACK find_app(HWND hwnd, LPARAM param);
@@ -200,7 +201,7 @@ int process(size_t argc, wchar_t *argv[]) {
     }
 
     // game specific hacks
-    if (wcsncmp(game_name, wot_name, sizeof(wot_name)) == 0) {
+    if (wcsncmp(game_name, wot_name, len(wot_name) - 1) == 0) {
         // theres a small visual glitch if wot is relocated too fast
         Sleep(30000);
     }
