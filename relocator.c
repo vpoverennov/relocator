@@ -1,4 +1,4 @@
-/* Author: Vasiliy Poverennov <bazookavn@gmail.com>
+/* Author: Vasiliy Poverennov <bazookavrn@gmail.com>
  * https://bitbucket.org/bazookavrn/relocator
  */
 
