@@ -1,5 +1,5 @@
 /* Author: Vasiliy Poverennov <vasiliy@poverennov.com>
- * https://bitbucket.org/bazookavrn/relocator
+ * https://github.com/vpoverennov/relocator
  */
 
 #include <stdio.h>
