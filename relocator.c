@@ -152,7 +152,7 @@ int process(size_t argc, wchar_t *argv[]) {
     if (argc < 2) {
         MessageBox(
             NULL,
-            (LPCWSTR)L"Get instructions at \nhttps://bitbucket.org/bazookavrn/relocator/",
+            (LPCWSTR)L"Get instructions at \nhttps://github.com/vpoverennov/relocator",
             (LPCWSTR)L"Does not work this way",
             MB_ICONWARNING | MB_OK
         );
