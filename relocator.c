@@ -155,7 +155,7 @@ int process(size_t argc, wchar_t *argv[]) {
         MessageBox(
             NULL,
             (LPCWSTR)L"Get instructions at \nhttps://github.com/vpoverennov/relocator",
-            (LPCWSTR)L"Does not work this way",
+            (LPCWSTR)L"Relocator 2.0",
             MB_ICONWARNING | MB_OK
         );
         return 1;
