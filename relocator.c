@@ -66,6 +66,8 @@ BOOL find_children(DWORD parent_pid) {
 }
 
 BOOL CALLBACK find_app(HWND hwnd, LPARAM param) {
+    UNREFERENCED_PARAMETER(param);
+
     LONG win_style;
     DWORD procid;
     size_t i;
@@ -213,6 +215,11 @@ int process(size_t argc, wchar_t *argv[]) {
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                    LPSTR lpCmdLine, int nCmdShow) {
+    UNREFERENCED_PARAMETER(hInstance);
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
+    UNREFERENCED_PARAMETER(nCmdShow);
+
     int argc;
     wchar_t **argv;
     wchar_t *cmdline = GetCommandLine();
