@@ -1,9 +1,0 @@
-default = dict(
-	CPPDEFINES=['UNICODE', '_UNICODE'],
-	LINKFLAGS=['-mwindows', '-s'],
-)
-
-env = Environment(tools=['mingw'], **default)
-
-res = env.RES('rl.coff', 'rl.rc')
-rl = env.Program('rl', ['relocator.c', res])
