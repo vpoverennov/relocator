@@ -35,7 +35,18 @@ requires `-window` argument, so path will look like
 Building
 --------
 
-Relocator from the download page is built with mingw using [scons](https://www.scons.org/). It was also tested with MSVS2010 express.
+The [original release](https://github.com/vpoverennov/relocator/releases/tag/original) of relocator was built with mingw using [scons](https://www.scons.org/).
+
+For newer releases using [zig](https://ziglang.org/) is recommended
+
+Download zig (at least 0.15.2) from https://ziglang.org/learn/getting-started/
+
+Run
+```shell
+zig build --release
+```
+This will create `zig-out/bin/rl.exe` - move it wherever you want and use
+
 
 Have Fun!
 
